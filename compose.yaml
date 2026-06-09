@@ -1,0 +1,34 @@
+# Antigravity (agy) agent container — definition lives in THIS repo (Demo_Project_Antigravity).
+# LIMITED tier (no GitHub creds), Rules RO.
+#
+# MULTI-ACCOUNT: agy's Google login is selected by ${AGY_ACCOUNT} (default "host").
+# Each account's auth lives in ~/authorities/antigravity/<account>/gemini.
+# Run several at once with different accounts via separate compose projects, e.g.:
+#   AGY_ACCOUNT=host  docker compose -p agy-host  up -d
+#   AGY_ACCOUNT=acct2 docker compose -p agy-acct2 up -d
+# (or use docker/agy.sh helper).
+services:
+  agy:
+    image: ocu-a1/agent:latest
+    pull_policy: never
+    container_name: ocu-agy-${AGY_ACCOUNT:-host}
+    init: true
+    tty: true
+    stdin_open: true
+    restart: unless-stopped
+    user: "1002:1002"
+    working_dir: /work
+    command: ["sleep infinity"]
+    networks: [ocu-net]
+    volumes:
+      - ../Demo_Project_Data:/work/data:rw
+      - ../Demo_Project_Rules:/work/rules:ro
+      - ./:/work/agent:rw
+      - ${HOME}/authorities/antigravity/${AGY_ACCOUNT:-host}/gemini:/home/agent/.gemini:rw
+      - ${HOME}/.gitconfig:/home/agent/.gitconfig:ro
+      - ${HOME}/projects/OCU-A1_Environment/OCU-A1_Environment_Data/config/tmux.conf:/home/agent/.tmux.conf:ro
+      - ${HOME}/projects/OCU-A1_Environment/OCU-A1_Environment_Data/docker/probe-limitations.sh:/usr/local/bin/probe:ro
+
+networks:
+  ocu-net:
+    external: true
